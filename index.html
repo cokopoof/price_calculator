@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> Pricing Calculator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            background-color: rgba(2,2,2,0.8)
+        }
+        #input_div {
+            padding: 2rem;
+        }
+        span {
+            font-family: Arial
+        }
+        h1 {
+            color: purple;
+            text-align: center;
+        }
+        #calc_container {
+            display: block;
+            width: 50%;
+            color: purple;
+            font-weight: bold;
+            background-color: rgba(0,199,0,1);
+            border-radius: 12rem;
+            padding: 2rem 2rem 1rem 2rem;
+            margin: 0 auto;
+        }
+        #table_container {
+            display: block;
+            width: 50%;
+            margin: 0 auto;
+            background-color: rgba(2,2,2,0.5);
+            padding: 0.5rem 0;
+            border-radius: 12rem;
+        }
+        #tbl_cap {
+            background-color: rgba(5, 5, 5, 0.1);
+            font-family: cursive;
+            font-size: 1.5rem;
+            color: rgb(200, 0, 200);
+            margin: 0 auto; 
+        }
+        table {
+            border: 0.2rem dashed purple;
+            margin: 1rem auto;
+            padding: 0.6rem;
+        }
+        th {
+            background-color: turquoise;
+            padding: 1rem;
+        }
+        td {
+            background-color: turquoise;
+            font-family: monospace;
+            padding: 0.4rem;
+        }
+        td:not(.col_2) {
+            font-family: Arial;
+        }
+        .col_2 {
+            background-color: aquamarine;
+            text-align: right;
+        }
+        #row_total td:last-of-type {
+            background-color: chartreuse;
+            font-weight: bolder;
+            font-family: monospace;
+            text-align: right;
+        }
+        input {
+            margin: 0.4rem
+        }
+        .num {
+            width: 4rem;
+        }
+        #total_btn {
+            margin: 0 0 0 11.5rem;
+        }
+        @media only screen and (max-width: 850px) {
+            
+            #calc_container {
+                width: 100%;
+                padding: 0;
+                border-radius: 0;
+            }
+            #table_container {
+                width: 100%;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="calc_container">
+
+        <datalist id="nuts">
+            <option value="Walnuts">
+            <option value="Pecans">
+            <option value="Almonds">
+            <option value="Cashews">
+            <option value="Peanuts">
+        </datalist>
+        <datalist id="seeds">
+            <option value="Sesame">
+            <option value="Hemp">
+            <option value="Flax">
+            <option value="Sunflower">
+            <option value="Chia">
+        </datalist>
+        <datalist id="grain">
+            <option value="Oats">
+            <option value="Quinoa">
+        </datalist>
+        <datalist id="fat">
+            <option value="Grapeseed Oil">
+            <option value="Olive Oil">
+            <option value="Coconut Oil">
+            <option value="Avocado Oil">
+            <option value="Butter">
+        </datalist>
+        <datalist id="sweetner">
+            <option value="Agave">
+            <option value="Honey">
+            <option value="Maple">
+        </datalist>
+        <datalist id="other">
+            <option value="Coconut Flakes">
+            <option value="Coconut Shreds">
+        </datalist>
+        <h1>Pricing Calculator</h1>
+        <form class="input" id="input_div">
+           <input type="text" id="recipe_name" placeholder="Name of recipe" style="margin-left: 0;" oninput="recipeName()"><br>
+            <select name="ingredient_type" id="ingredient_type" onchange="getIngList(event)">
+                <option value="nuts" selected>Nut</option>
+                <option value="seeds">Seed</option>
+                <option value="grain">Grain</option>
+                <option value="fat">Fat</option>
+                <option value="sweetner">Sweetner</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="text" id="ingredient_list" list="nuts" placeholder="Select Ingredient...">
+            <input type="number" id="ingredient_amt" class="num" min="0">
+            <select name="unit" id="unit">
+                <option value="oz">oz</option>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="lb">lb</option>
+            </select>
+            <span>&#36;</span><input type="number" id="price_whole" class="num" min="0">
+            <br><button type="button" id="calc_button" onclick="calcPerOz()">=</button>
+            <span>&nbsp;&#36;</span><input type="number" id="price_per_oz_output" class="num" disabled><span>&nbsp;&#47;&nbsp;oz</span>
+            <br><span>Amount in Recipe:</span><input type='number' id='recipe_amt' class="num" min="0" disabled><span>oz</span>
+            <button value='1' type="button" id='fnl_calc_btn' onclick='newTblItem()' disabled>Calculate</button>
+            <input type="reset" value="Restart">
+        </form>
+
+    </div>
+    <div class="container" id="table_container">
+        <table id="calc_results">
+           <caption id="tbl_cap"></caption>
+            <tbody id="tbody_results">
+                <tr id="table_headers">
+                    <th>Ingredient</th>
+                    <th>Price In Recipe</th>
+                    <th>Delete</th>
+                </tr>
+            </tbody>
+        </table>
+         <input type="button" value="Get Total" id="total_btn" onclick="getTotal()" disabled>
+         <input type="button" value="Export PDF" id="exp_pdf" onclick="$('#calc_results').tableExport({type:'pdf',escape:'false'});" disabled>
+         <input type="button" value="Export PNG" id="exp_png" onclick="$('#calc_results').tableExport({type:'png',escape:'false'});" disabled>
+    </div>
+   
+    <script>
+        // Creates an ingredient with it's name, amount and the unit used to measure it
+        function ingredient(ingredient, unit_amt, unit) {
+            this.ingredient = ingredient;
+            this.unit_amt = unit_amt;
+            this.unit = unit;
+            // Converts the unit to appropriate amount in oz
+            this.unit_to_oz = function() {
+                if (this.unit == "g") {
+                    return this.unit_amt * 0.0353;
+                } else if (this.unit == "lb") {
+                    return this.unit_amt * 16;
+                } else if (this.unit == "ml") {
+                    return this.unit_amt * 0.033814;
+                } else {
+                    return this.unit_amt;
+                }
+            };
+        }
+        // Gets the correct list based on 
+        function getIngList(event) {
+            var ingType = event.target.value;
+            document.getElementById("ingredient_list").setAttribute("list", ingType);
+        }
+
+        function calcPerOz() {
+            var ing = document.getElementById("ingredient_list").value;
+            var ing_amt = parseFloat(document.getElementById("ingredient_amt").value);
+            var ing_unit = document.getElementById("unit").value;
+            var newIng = new ingredient(ing, ing_amt, ing_unit);
+            var priceOut = document.getElementById("price_per_oz_output");
+            var wholePrice = parseFloat(document.getElementById("price_whole").value);
+            var calc_per_oz = wholePrice / newIng.unit_to_oz();
+            priceOut.value = calc_per_oz;
+            document.getElementById("fnl_calc_btn").disabled = false;
+            document.getElementById("recipe_amt").disabled = false;
+            
+        }
+        
+        function recipeName() {
+            var recipeName = document.getElementById("recipe_name").value;
+            var tblCap = document.getElementById("tbl_cap");
+           
+            tblCap.innerHTML = recipeName;
+        }
+
+        function newTblItem() {
+            // set up variables, calculate results and display in table
+            var calcTbl = document.getElementById("tbody_results");
+            var btnFnl = document.getElementById("fnl_calc_btn");
+            var val = parseInt(btnFnl.value);
+            val++
+            btnFnl.value = val;
+
+            var ing = document.getElementById("ingredient_list").value;
+            var priceOut = document.getElementById("price_per_oz_output").value;
+            var recAmt = document.getElementById("recipe_amt").value;
+            var ingCost = priceOut * recAmt;
+            calcTbl.innerHTML += "<tr id='row_" + val + "'> \
+                                    <td>" + ing + "</td> \
+                                    <td class='col_2' data-cost='"+ingCost+"' data-rec-amt='"+recAmt+"'>$" + ingCost.toFixed(2) + "</td> \
+                                    <td style='color: red; text-align: center;'>X</td> \
+                                  </tr>";
+            // reset fields
+            document.getElementById("input_div").reset();
+            document.getElementById("fnl_calc_btn").disabled = true;
+            document.getElementById("recipe_amt").disabled = true;
+
+            if (val >= 3) {
+                document.getElementById("total_btn").disabled = false;
+            }
+            return false;
+        }
+
+        function getTotal() {
+            var costsObj = document.getElementsByClassName("col_2");
+            var calcTbl = document.getElementById("tbody_results");
+            var costs= [];
+            var amounts = [];
+            for (var i = 0; i < costsObj.length; i++) {
+                costs.push(parseFloat(costsObj[i].getAttribute("data-cost")));
+                amounts.push(parseFloat(costsObj[i].getAttribute("data-rec-amt")));
+            }
+            var total = costs.reduce(getSum);
+            var total_rec_amt = amounts.reduce(getSum);
+            var cstPerOz = total / total_rec_amt;
+            calcTbl.innerHTML += "<tr id='row_total'> \
+                                    <td>Total Cost:</td> \
+                                    <td colspan='2'>$" + total.toFixed(2) + "</td> \
+                                  </tr> \
+                                  <tr id='row_total_oz'> \
+                                    <td>Cost / oz:</td> \
+                                    <td colspan='2' style='font-weight: bolder; font-family: monospace; text-align: right; background-color: chartreuse;'>$" + cstPerOz.toFixed(2) + "/oz</td> \
+                                  </tr>";
+            document.getElementById("total_btn").disabled = true;
+            document.getElementById("exp_pdf").disabled = false;
+            document.getElementById("exp_png").disabled = false;
+        }
+        
+        function getSum(total, num) {
+            return total + num;
+        }
+
+        function getValue(event) {
+            console.log(event.target.tagName + " " + event.target.value);
+        }
+    </script>
+</body></html>
