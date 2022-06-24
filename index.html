@@ -21,23 +21,24 @@
             color: purple;
             text-align: center;
         }
-        #calc_container {
-            display: block;
-            width: 50%;
-            color: purple;
-            font-weight: bold;
-            background-color: rgba(0,199,0,1);
-            border-radius: 12rem;
-            padding: 2rem 2rem 1rem 2rem;
-            margin: 0 auto;
-        }
+       #calc_container {
+    display: flex;
+    color: purple;
+    font-weight: bold;
+    background-color: rgba(0,199,0,1);
+    padding: 2rem 2rem 1rem 2rem;
+    margin: 0 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
         #table_container {
             display: block;
-            width: 50%;
+           
             margin: 0 auto;
             background-color: rgba(2,2,2,0.5);
             padding: 0.5rem 0;
-            border-radius: 12rem;
+           
         }
         #tbl_cap {
             background-color: rgba(5, 5, 5, 0.1);
@@ -82,6 +83,11 @@
         #total_btn {
             margin: 0 0 0 11.5rem;
         }
+        .button-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         @media only screen and (max-width: 850px) {
             
             #calc_container {
@@ -94,6 +100,7 @@
                 border-radius: 0;
             }
         }
+        
     </style>
 </head>
 
@@ -174,9 +181,12 @@
                 </tr>
             </tbody>
         </table>
-         <input type="button" value="Get Total" id="total_btn" onclick="getTotal()" disabled>
-         <input type="button" value="Export PDF" id="exp_pdf" onclick="$('#calc_results').tableExport({type:'pdf',escape:'false'});" disabled>
-         <input type="button" value="Export PNG" id="exp_png" onclick="$('#calc_results').tableExport({type:'png',escape:'false'});" disabled>
+        <div class="button-wrap">
+            <input type="button" value="Get Total" id="total_btn" onclick="getTotal()" disabled>
+            <input type="button" value="Export PDF" id="exp_pdf" onclick="$('#calc_results').tableExport({type:'pdf',escape:'false'});" disabled>
+            <input type="button" value="Export PNG" id="exp_png" onclick="$('#calc_results').tableExport({type:'png',escape:'false'});" disabled>
+        </div>
+        
     </div>
    
     <script>
